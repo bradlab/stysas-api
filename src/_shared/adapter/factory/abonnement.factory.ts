@@ -1,7 +1,5 @@
 import { Abonnement, OAbonnement } from 'domain/model/subscription.model';
 import { ICreateAbonnementDTO, IUpdateAbonnementDTO } from 'abonnement/abonnement.service.interface';
-import { OAdherent } from 'domain/model/adherent.model';
-import { OSalle } from 'domain/model/salle.model';
 import { SalleFactory } from './salle.factory';
 import { AdherentFactory } from './adherent.factory';
 
@@ -18,8 +16,8 @@ export abstract class AbonnementFactory {
 
   static update(abonnement: Abonnement, data: IUpdateAbonnementDTO): Abonnement {
     abonnement.date_debut = data.date_debut ?? abonnement.date_debut;
-    abonnement.adherent = data.adherent ?? abonnement.adherent;
-    abonnement.salle = data.salle ?? abonnement.salle;
+    // abonnement.adherent = data.adherentID as any ?? abonnement.adherent;
+    // abonnement.salle = data.salleID as any ?? abonnement.salle;
     abonnement.date_fin = data.date_fin ?? abonnement.date_fin;
 
     return abonnement;

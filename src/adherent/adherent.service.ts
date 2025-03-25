@@ -64,7 +64,7 @@ export class AdherentService implements IAdherentService {
       if (adherent) {
         adherent.subscriptions = await this.dashboardRepository.subscriptions.find({
           relations: { salle: true },
-          where: { adherent: { id: adherent.id } },
+          where: { adherent },
         });
         if (DataHelper.isNotEmptyArray(adherent.subscriptions)) {
           adherent.subscriptions = await Promise.all(adherent.subscriptions.map(async (sub) => {
@@ -125,7 +125,6 @@ export class AdherentService implements IAdherentService {
 
   async bulk(staff: Staff, datas: ICreateAdherentDTO[]): Promise<Adherent[]> {
     try {
-      // Vérifier si une annonce avec le même titre existe déjà
       const adherents: Adherent[] = [];
       if (DataHelper.isNotEmptyArray(datas)) {
         if (!staff) {

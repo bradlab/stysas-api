@@ -50,14 +50,15 @@ export class GlobalSeed implements OnApplicationBootstrap {
         matricule: 120,
       };
       let existed = await this.adminService.search({
-        telephone: data.telephone,
+        courriel: data.courriel,
+        // matricule: data.matricule,
       });
       if (!existed)
         existed = await this.adminService.search({ matricule: data.matricule });
       if (!existed) {
         const staff = await this.adminService.add(data);
-        console.log('ADMIN ===== STAFF', {
-          telephone: staff?.telephone,
+        this.logger.log('ADMIN ====== STAFF', {
+          courriel: staff?.courriel,
           pwd: data.password,
         });
       }
@@ -252,9 +253,10 @@ export class GlobalSeed implements OnApplicationBootstrap {
         },
       ];
       // this.equipmentService.bulk({} as Staff, tablePartRandomly(datas));
+
       this.equipmentService.bulk(
         {} as Staff,
-        datas.slice(index, (index + 1) * 3),
+        datas.slice(index * 4, (index + 1) * 4),
       );
     } catch (error) {
       this.logger.error(error.message, 'ERROR::GlobalSeed.createEquipments');

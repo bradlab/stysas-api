@@ -171,7 +171,6 @@ export class AuthService implements IAuthService {
       } else {
         options = { ...data };
       }
-
       const user = await this.dashboardRepository.users.findOne({
         where: { ...options },
       });

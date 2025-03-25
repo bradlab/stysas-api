@@ -3,11 +3,12 @@ import { HydratedDocument, Schema as MongooseSchema } from 'mongoose';
 import { PersonEntity } from './person.schema';
 import { CarriereEntity } from './carriere.entity';
 import { DisponibiliteEntity } from './disponibilite.entity';
+import { Entraineur } from 'domain/model/coach.model';
 
 export type EntraineurDocument = HydratedDocument<EntraineurEntity>;
 
 @Schema()
-export class EntraineurEntity extends PersonEntity {
+export class EntraineurEntity extends PersonEntity implements Entraineur {
   @Prop({ required: true, unique: true })
   num_coach: number;
 

@@ -113,7 +113,6 @@ export class SalleService implements ISalleService {
 
   async bulk(staff: Staff, datas: ICreateSalleDTO[]): Promise<Salle[]> {
     try {
-      // Vérifier si une annonce avec le même titre existe déjà
       const salles: Salle[] = [];
       if (DataHelper.isNotEmptyArray(datas)) {
         if (!staff) {

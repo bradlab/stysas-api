@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { BasicPersonnalInfoDTO } from 'adapter/param.dto';
-import { BaseDashboardMetric } from './staff.service.interface';
 import { OStaff } from 'domain/model/staff.model';
 
 export class DocStaffDTO
@@ -29,17 +28,4 @@ export class DocStaffDTO
 export class DocSignedStaffDTO extends DocStaffDTO {
   @ApiProperty({ type: String })
   accessToken: string;
-}
-export class DocDashboardMetricDTO implements BaseDashboardMetric {
-  @ApiProperty({ type: Number })
-  clients: number;
-
-  @ApiProperty({ type: Number })
-  subscriptions: number;
-
-  @ApiProperty({ type: Number })
-  prestations: number;
-
-  @ApiProperty({ type: Number })
-  coachs: number;
 }

@@ -61,10 +61,10 @@ export class EntraineurService implements IEntraineurService {
       });
       if (entraineur) {
         entraineur.disponibilites = await this.dashboardRepository.disponibilites.find({
-          where: { entraineur: { id: entraineur.id } },
+          where: { entraineur },
         });
         entraineur.carrieres = await this.dashboardRepository.carrieres.find({
-          where: { entraineur: { id: entraineur.id } },
+          where: { entraineur },
         });
         if (DataHelper.isNotEmptyArray(entraineur.carrieres)) {
           entraineur.carrieres = await Promise.all(entraineur.carrieres.map(async (carriere) => {
@@ -110,7 +110,6 @@ export class EntraineurService implements IEntraineurService {
 
     async bulk(datas: ICreateEntraineurDTO[]): Promise<Entraineur[]> {
       try {
-        // Vérifier si une annonce avec le même titre existe déjà
         const entraineurs: Entraineur[] = [];
         if (DataHelper.isNotEmptyArray(datas)) {
           for (const data of datas) {

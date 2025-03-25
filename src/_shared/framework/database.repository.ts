@@ -11,17 +11,17 @@ export class DBGenericRepository<T> implements IGenericRepository<T> {
   }
 
   find(options?: any): Promise<T[]> {
-    if (options?.where) {
-      options = {...options.where, ...options, where: undefined};
+    // if (this._repository.modelName === 'EquipementEntity') {
+    //   return this._repository.find(this.convertWhere(options)).populate('salle').exec();
+    // }
+    // if (this._repository.modelName === 'SalleSportEntity') {
+    //   return this._repository.find(this.convertWhere(options)).populate('equipments').exec();
+    // }
+    if (options) {
+      const query = this._repository.find(this.convertWhere(options));
+      return this.transformQueryToMongoose(query, options)
     }
-    if (this._repository.modelName === 'EquipementEntity') {
-      return this._repository.find(this.convertWhere(options)).populate('salle').exec();
-    }
-    if (this._repository.modelName === 'SalleSportEntity') {
-      return this._repository.find(this.convertWhere(options)).populate('equipments').exec();
-    }
-    const query = this._repository.find(this.convertWhere(options));
-    return this.transformQueryToMongoose(query, options)
+    return this._repository.find().exec();
   }
 
   findBy(options: any): Promise<T[]> {
@@ -134,39 +134,41 @@ export class DBGenericRepository<T> implements IGenericRepository<T> {
     options: RepoParam<T>
   ): Promise<T[]> {
     try {
-      // let query = this._repository.find(this.convertWhere(options.where) || {});
-  
-      // Gestion des relations (populate)
-      if (options.relations) {
-        // query = await this.populateRecursive(query, options.relations as any);
-        for (const relation in options.relations as any) {
-          if (options.relations[relation] === true) {
-            query = query.populate(relation);
-          } else {
-            query = query.populate({
-              path: relation,
-              populate: options.relations[relation],
-            });
+      if (options) {
+        // let query = this._repository.find(this.convertWhere(options.where) || {});
+    
+        // Gestion des relations (populate)
+        if (options?.relations) {
+          // query = await this.populateRecursive(query, options.relations as any);
+          for (const relation in options.relations as any) {
+            if (options.relations[relation] === true) {
+              query = query.populate(relation);
+            } else {
+              query = query.populate({
+                path: relation,
+                populate: options.relations[relation],
+              });
+            }
           }
         }
-      }
-  
-      // Gestion de l'ordre de tri
-      if (options.order) {
-        query = query.sort(this.convertirOrderEnSort(options.order));
-      }
-  
-      // Gestion des champs à sélectionner
-      if (options.select) {
-        query = query.select(options.select as any);
-      }
-  
-      // Gestion de la pagination
-      if (options.skip) {
-        query = query.skip(options.skip);
-      }
-      if (options.take) {
-        query = query.limit(options.take);
+    
+        // Gestion de l'ordre de tri
+        if (options.order) {
+          query = query.sort(this.convertirOrderEnSort(options.order));
+        }
+    
+        // Gestion des champs à sélectionner
+        if (options.select) {
+          query = query.select(options.select as any);
+        }
+    
+        // Gestion de la pagination
+        if (options.skip) {
+          query = query.skip(options.skip);
+        }
+        if (options.take) {
+          query = query.limit(options.take);
+        }
       }
   
       return await query.exec();

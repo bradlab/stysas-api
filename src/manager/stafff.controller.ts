@@ -19,20 +19,19 @@ import {
   ApiResponse,
   ApiParam,
   ApiConsumes,
-  ApiQuery,
   ApiExcludeEndpoint,
 } from '@nestjs/swagger';
 import { diskStorage } from 'multer';
 import { DataGenerator } from 'domain/generator/data.generator';
 import { IDParamDTO, IDsParamDTO } from 'adapter/param.dto';
-import { BaseDashboardMetric, IStaffService } from './staff.service.interface';
+import { IStaffService } from './staff.service.interface';
 import {
   UserQuerDTO,
   RegisterStaffDTO,
   UpdateClientDTO,
 } from './staff.input.dto';
 import { StaffFactory } from '../_shared/adapter/factory/staff.factory';
-import { DocDashboardMetricDTO, DocStaffDTO } from './doc.staff.dto';
+import { DocStaffDTO } from './doc.staff.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { BaseConfig } from 'config/base.config';
 import { StaffGuard } from 'adapter/guard/auth.guard';
@@ -58,17 +57,6 @@ export class StaffController {
     }
     const users = await this.staffService.fetchAll(param);
     return users.map((client) => StaffFactory.getUser(client));
-  }
-
-  @Get('metric')
-  @ApiOperation({
-    summary: 'Métric du projet',
-    description: 'Statistique concernant les adhérents et abonnements',
-  })
-  @ApiResponse({ type: DocDashboardMetricDTO, isArray: true })
-  async metric(): Promise<BaseDashboardMetric> {
-    
-    return await this.staffService.getMetric();
   }
 
   @Get(':id')
