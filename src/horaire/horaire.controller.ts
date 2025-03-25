@@ -44,7 +44,7 @@ export class HoraireController {
     })
     @ApiResponse({ type: DocHoraireDTO })
     async show(@Param() { id }: IDParamDTO): Promise<OHoraire> {
-      return HoraireFactory.getHoraire(await this.horaireService.fetchOne(id));
+      return HoraireFactory.getHoraire(await this.horaireService.fetchOne(id), true);
     }
   
     /**

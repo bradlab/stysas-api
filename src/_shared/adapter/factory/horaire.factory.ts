@@ -1,5 +1,6 @@
 import { Horaire, OHoraire } from 'domain/model/horaire.model';
 import { ICreateHoraireDTO, IUpdateHoraireDTO } from 'horaire/horaire.service.interface';
+import { DisponibiliteFactory } from './disponibilite.factory';
 
 export abstract class HoraireFactory {
   static create(data: ICreateHoraireDTO): Horaire {
@@ -16,12 +17,13 @@ export abstract class HoraireFactory {
     return horaire;
   }
 
-  static getHoraire(horaire: Horaire): OHoraire {
+  static getHoraire(horaire: Horaire, deep?: boolean): OHoraire {
     if (horaire) {
       return {
         id: horaire.id,
         debut: horaire.debut,
         fin: horaire.fin,
+        disponibilites: deep ? DisponibiliteFactory.getDisponibilites(horaire.disponibilites !) : undefined,
         createdAt: horaire.createdAt,
         updatedAt: horaire.updatedAt,
       };

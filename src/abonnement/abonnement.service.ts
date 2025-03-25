@@ -15,29 +15,42 @@ export class AbonnementService implements IAbonnemntService {
   ) {}
   
   async fetchAll(param?: IAbonnementQuery): Promise<Abonnement[]> {
-    if (!DataHelper.isEmpty(param) && param) {
-      let queryParam: DeepQueryType<Abonnement> | DeepQueryType<Abonnement>[] = {};
-      const { ids } = param!;
-      if (DataHelper.isNotEmptyArray(ids!)) {
-        if (typeof ids === 'string') {
-          param!.ids = [ids];
+    try {
+      let abonnements: Abonnement [] = [];
+      if (!DataHelper.isEmpty(param) && param) {
+        let queryParam: DeepQueryType<Abonnement> | DeepQueryType<Abonnement>[] = {};
+        const { ids } = param!;
+        if (DataHelper.isNotEmptyArray(ids!)) {
+          if (typeof ids === 'string') {
+            param!.ids = [ids];
+          }
+          queryParam = { ...queryParam, id: VIn(param!.ids!) };
         }
-        queryParam = { ...queryParam, id: VIn(param!.ids!) };
-      }
-      if (!DataHelper.isEmpty(queryParam)) {
-        return await this.dashboardRepository.subscriptions.find({
-          // relations: { equipments: true, subscriptions: { adherent: true }, },
-          where: { ...queryParam },
+        if (!DataHelper.isEmpty(queryParam)) {
+          abonnements = await this.dashboardRepository.subscriptions.find({
+            // relations: { adherent: true, salle: true },
+            where: { ...queryParam },
+            order: { createdAt: 'DESC' },
+          });
+        }
+      } else {
+        abonnements = await this.dashboardRepository.subscriptions.find({
+          // relations: { adherent: true, salle: true },
           order: { createdAt: 'DESC' },
         });
       }
-
+      if (abonnements) {
+        return Promise.all(abonnements.map(async (sub) => {
+          sub.adherent = await this.dashboardRepository.adherents.findOneBy({ id: sub.adherent });
+          sub.salle = await this.dashboardRepository.salles.findOneBy({ id: sub.salle });
+          return sub;
+        }));
+      }
+      return abonnements;
+    } catch (error) {
+      this.logger.error(error.message, 'ERROR::AbonnementService.fetchAll');
       return [];
     }
-    return await this.dashboardRepository.subscriptions.find({
-      // relations: { equipments: true, subscriptions: { adherent: true }, },
-      order: { createdAt: 'DESC' },
-    });
   }
 
   async search(data: IAbonnementQuery): Promise<Abonnement> {
@@ -55,10 +68,15 @@ export class AbonnementService implements IAbonnemntService {
 
   async fetchOne(id: string): Promise<Abonnement> {
     try {
-      return await this.dashboardRepository.subscriptions.findOne({
-        relations: { adherent: true, salle: true, },
+      const abonnement = await this.dashboardRepository.subscriptions.findOne({
+        // relations: { adherent: true, salle: true, },
         where: { id },
       });
+      if (abonnement) {
+        abonnement.adherent = await this.dashboardRepository.adherents.findOneBy({ id: abonnement.adherent });
+        abonnement.salle = await this.dashboardRepository.salles.findOneBy({ id: abonnement.salle });
+      }
+      return abonnement;
     } catch (error) {
       this.logger.error(error, 'ERROR::AbonnementService.fetchOne');
       return null as any;
@@ -68,16 +86,24 @@ export class AbonnementService implements IAbonnemntService {
   async add(data: ICreateAbonnementDTO): Promise<Abonnement> {
     try {
       const { adherentID, salleID } = data;
-      let existed: Abonnement;
-      existed = await this.search({ salleID, adherentID });
-      if (existed!) {
-        throw new ConflictException(
-          'Ce numéro de abonnement existe déjà',
-        );
-      }
+      // let existed: Abonnement;
+      // existed = await this.search({ salleID, adherentID });
+      // if (existed!) {
+      //   throw new ConflictException(
+      //     'Ce numéro de abonnement existe déjà',
+      //   );
+      // }
+      const adherent = await this.dashboardRepository.adherents.findOneByID(adherentID);
+      if (!adherent) throw new NotFoundException('Adherent not found');
+      const salle = await this.dashboardRepository.salles.findOneByID(salleID);
+      if (!salle) throw new NotFoundException('Salle not found');
       const abonnement = await this.dashboardRepository.subscriptions.create(
         AbonnementFactory.create(data),
       );
+      if (abonnement) {
+        abonnement.adherent = adherent;
+        abonnement.salle = salle;
+      }
       return abonnement;
     } catch (error) {
       this.logger.error(error, 'ERROR::AbonnementService.add');

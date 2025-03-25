@@ -29,7 +29,7 @@ export class SalleController {
         param.ids = ids?.split(',');
       }
       const salles = await this.salleService.fetchAll(param);
-      return salles.map((salle) => SalleFactory.getSalle(salle));
+      return salles.map((salle) => SalleFactory.getSalle(salle, true));
     }
   
     @Get(':id')

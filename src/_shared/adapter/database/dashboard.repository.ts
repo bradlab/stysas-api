@@ -58,9 +58,7 @@ export class DashboardRepository
     @InjectModel(EntraineurEntity.name)
     private coachRepository: Model<EntraineurEntity>,
 
-    @InjectModel(SalleSportEntity.name)
-    private prestationRepository: Model<SalleSportEntity>,
-
+    
     @InjectModel(SubscriptionEntity.name)
     private storeRepository: Model<SubscriptionEntity>,
 
@@ -72,6 +70,9 @@ export class DashboardRepository
 
     @InjectModel(CarriereEntity.name)
     private carriereRepository: Model<CarriereEntity>,
+
+    @InjectModel(SalleSportEntity.name)
+    private prestationRepository: Model<SalleSportEntity>,
 
     @InjectModel(EquipementEntity.name)
     private equipementRepository: Model<EquipementEntity>,

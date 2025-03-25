@@ -54,10 +54,34 @@ export class EntraineurService implements IEntraineurService {
 
   async fetchOne(id: string): Promise<Entraineur> {
     try {
-      return await this.dashboardRepository.coachs.findOne({
-        relations: { disponibilites: true, carrieres: true, },
+      // TODO: Optimiser la façade pour pouvoir transformer les relations en populate
+      const entraineur = await this.dashboardRepository.coachs.findOne({
+        // relations: { disponibilites: true, carrieres: true, },
         where: { id },
       });
+      if (entraineur) {
+        entraineur.disponibilites = await this.dashboardRepository.disponibilites.find({
+          where: { entraineur: { id: entraineur.id } },
+        });
+        entraineur.carrieres = await this.dashboardRepository.carrieres.find({
+          where: { entraineur: { id: entraineur.id } },
+        });
+        if (DataHelper.isNotEmptyArray(entraineur.carrieres)) {
+          entraineur.carrieres = await Promise.all(entraineur.carrieres.map(async (carriere) => {
+            if (carriere.salle) return carriere;
+            carriere.salle = await this.dashboardRepository.salles.findOneBy({ id: carriere.salle });
+            return carriere;
+          }));
+        }
+        if (DataHelper.isNotEmptyArray(entraineur.disponibilites)) {
+          entraineur.disponibilites = await Promise.all(entraineur.disponibilites.map(async (dispo) => {
+            // if (dispo.horaire) return dispo;
+            dispo.horaire = await this.dashboardRepository.horaires.findOneBy({ id: dispo.horaire });
+            return dispo;
+          }));
+        }
+      }
+      return entraineur;
     } catch (error) {
       this.logger.error(error, 'ERROR::EntraineurService.fetchOne');
       return null as any;

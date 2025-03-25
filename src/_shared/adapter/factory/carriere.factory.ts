@@ -8,8 +8,8 @@ export abstract class CarriereFactory {
     const carriere = new Carriere();
     carriere.date_debut = data.date_debut;
     carriere.date_fin = data.date_fin;
-    carriere.entraineur = data.entraineur;
-    carriere.salle = data.salle;
+    carriere.entraineur = data.entraineurID as any;
+    carriere.salle = data.salleID as any;
     return carriere;
   }
 
@@ -19,17 +19,22 @@ export abstract class CarriereFactory {
     return carriere;
   }
 
-  static getCarriere(carriere: Carriere): OCarriere {
+  static getCarriere(carriere: Carriere, deep?: boolean): OCarriere {
     if (carriere) {
       return {
         id: carriere.id,
         date_debut: carriere.date_debut,
-        entraineur: EntraineurFactory.getEntraineur(carriere.entraineur!),
-        salle: SalleFactory.getSalle(carriere.salle!),
+        entraineur: deep ? EntraineurFactory.getEntraineur(carriere.entraineur!) : undefined,
+        salle: deep ? SalleFactory.getSalle(carriere.salle!) : undefined,
         createdAt: carriere.createdAt,
         updatedAt: carriere.updatedAt,
       };
     }
     return null as any;
+  }
+
+  static getCarrieres(carrieres: Carriere[], deep?: boolean): OCarriere[] {
+    if (!carrieres) return [];
+    return carrieres.map((carriere) => CarriereFactory.getCarriere(carriere, deep));
   }
 }

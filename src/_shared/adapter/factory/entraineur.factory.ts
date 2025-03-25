@@ -1,7 +1,10 @@
+import { DataHelper } from 'adapter/helper/data.helper';
 import { OCarriere } from 'domain/model/carriere.model';
 import { Entraineur, OEntraineur } from 'domain/model/coach.model';
 import { ODisponibilite } from 'domain/model/disponibilite.model';
 import { ICreateEntraineurDTO, IUpdateEntraineurDTO } from 'entraineur/entraineur.service.interface';
+import { DisponibiliteFactory } from './disponibilite.factory';
+import { CarriereFactory } from './carriere.factory';
 
 export abstract class EntraineurFactory {
   static create(data: ICreateEntraineurDTO): Entraineur {
@@ -39,8 +42,8 @@ export abstract class EntraineurFactory {
     return entraineur;
   }
 
-  static getEntraineur(entraineur: Entraineur): OEntraineur {
-    if (entraineur) {
+  static getEntraineur(entraineur: Entraineur, deep?: boolean): OEntraineur {
+    if (entraineur && typeof entraineur != 'string') {
       return {
         id: entraineur.id,
         courriel: entraineur.courriel,
@@ -53,8 +56,8 @@ export abstract class EntraineurFactory {
         specialite: entraineur.specialite,
         date_emb: entraineur.date_emb,
         sal_base: entraineur.sal_base,
-        carrieres: entraineur.carrieres as OCarriere[], // TODO
-        disponibilites: entraineur.disponibilites as ODisponibilite[],
+        carrieres: deep ? CarriereFactory.getCarrieres(entraineur.carrieres!) : undefined,
+        disponibilites: deep ? DisponibiliteFactory.getDisponibilites(entraineur.disponibilites!) : undefined,
         isActivated: entraineur.isActivated,
         createdAt: entraineur.createdAt,
         updatedAt: entraineur.updatedAt,

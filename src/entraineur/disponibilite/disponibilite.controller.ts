@@ -27,7 +27,7 @@ export class DisponibiliteController {
         param.ids = ids?.split(',');
       }
       const disponibilites = await this.disponibiliteService.fetchAll(param);
-      return disponibilites.map((disponibilite) => DisponibiliteFactory.getDisponibilite(disponibilite));
+      return DisponibiliteFactory.getDisponibilites(disponibilites, true);
     }
   
     @Get(':id')
@@ -42,7 +42,7 @@ export class DisponibiliteController {
     })
     @ApiResponse({ type: DocDisponibiliteDTO })
     async show(@Param() { id }: IDParamDTO): Promise<ODisponibilite> {
-      return DisponibiliteFactory.getDisponibilite(await this.disponibiliteService.fetchOne(id));
+      return DisponibiliteFactory.getDisponibilite(await this.disponibiliteService.fetchOne(id), true);
     }
   
     /**

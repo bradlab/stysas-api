@@ -44,7 +44,7 @@ export class EquipmentController {
     })
     @ApiResponse({ type: DocEquipmentDTO })
     async show(@Param() { id }: IDParamDTO): Promise<OEquipement> {
-      return EquipmentFactory.getEquipement(await this.equipmentService.fetchOne(id));
+      return EquipmentFactory.getEquipement(await this.equipmentService.fetchOne(id), true);
     }
   
     /**
