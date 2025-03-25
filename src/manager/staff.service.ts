@@ -9,7 +9,7 @@ import {
 import { DataHelper } from 'adapter/helper/data.helper';
 import { DeepQueryType, PartialDeep } from 'domain/types';
 import { VIn } from 'framework/orm.clauses';
-import { BaseDashboardMetric, IStaffService, IUpdateClientDTO } from './staff.service.interface';
+import { IStaffService, IUpdateClientDTO } from './staff.service.interface';
 import { IUserQuery } from 'src/auth/auth.service.interface';
 import { IRegisterStaffDTO } from 'src/auth/auth.service.interface';
 import { StaffFactory } from '../_shared/adapter/factory/staff.factory';
@@ -48,26 +48,6 @@ export class StaffService implements IStaffService {
     return await this.dashboardRepository.users.find({
       order: { createdAt: 'DESC' },
     });
-  }
-
-  async getMetric(): Promise<BaseDashboardMetric> {
-    try {
-      const subscriptions = await this.dashboardRepository.subscriptions.find({
-        where: {actif: true}
-      });
-      const clients = await this.dashboardRepository.adherents.find();
-      const coachs = await this.dashboardRepository.coachs.find();
-      const prestations = await this.dashboardRepository.salles.find();
-      return {
-        clients: clients.length,
-        subscriptions: subscriptions.length,
-        prestations: prestations.length,
-        coachs: coachs.length
-      }
-    } catch (error) {
-      this.logger.error(error, 'ERROR::StaffService.fetchAll');
-      throw error;
-    }
   }
 
   async search(data: PartialDeep<Staff>): Promise<Staff> {

@@ -65,7 +65,6 @@ export class HoraireService implements IHoraireService {
 
     async bulk(datas: ICreateHoraireDTO[]): Promise<Horaire[]> {
       try {
-        // Vérifier si une annonce avec le même titre existe déjà
         const horaires: Horaire[] = [];
         if (DataHelper.isNotEmptyArray(datas)) {
           for (const data of datas) {

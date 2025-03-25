@@ -17,6 +17,7 @@ import { SalleModule } from 'salle/salle.module';
 import { EntraineurModule } from 'entraineur/entraineur.module';
 import { AbonnementModule } from 'abonnement/abonnement.module';
 import { HoraireModule } from 'horaire/horaire.module';
+import { StatisticModule } from 'statistic/statistic.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { HoraireModule } from 'horaire/horaire.module';
     HoraireModule,
     EntraineurModule,
     AbonnementModule,
+    StatisticModule,
   ],
   controllers: [AppController],
   providers: [AppService],

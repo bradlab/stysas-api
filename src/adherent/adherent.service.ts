@@ -57,11 +57,24 @@ export class AdherentService implements IAdherentService {
 
   async fetchOne(id: string): Promise<Adherent> {
     try {
-      console.log('FIND ====== ONE', id)
-      return await this.dashboardRepository.adherents.findOne({
-        relations: { subscriptions: {salle: true} },
+      const adherent = await this.dashboardRepository.adherents.findOne({
+        relations: { subscriptions: true },
         where: { id },
       });
+      if (adherent) {
+        adherent.subscriptions = await this.dashboardRepository.subscriptions.find({
+          relations: { salle: true },
+          where: { adherent },
+        });
+        if (DataHelper.isNotEmptyArray(adherent.subscriptions)) {
+          adherent.subscriptions = await Promise.all(adherent.subscriptions.map(async (sub) => {
+            if (sub.salle) return sub;
+            sub.salle = await this.dashboardRepository.salles.findOneBy({ id: sub.salle });
+            return sub;
+          }));
+        }
+      }
+      return adherent;
     } catch (error) {
       this.logger.error(error, 'ERROR::AdherentService.fetchOne');
       return null as any;
@@ -112,7 +125,6 @@ export class AdherentService implements IAdherentService {
 
   async bulk(staff: Staff, datas: ICreateAdherentDTO[]): Promise<Adherent[]> {
     try {
-      // Vérifier si une annonce avec le même titre existe déjà
       const adherents: Adherent[] = [];
       if (DataHelper.isNotEmptyArray(datas)) {
         if (!staff) {

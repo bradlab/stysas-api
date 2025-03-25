@@ -15,29 +15,42 @@ export class CarriereService implements ICarriereService {
   ) {}
   
   async fetchAll(param?: ICarriereQuery): Promise<Carriere[]> {
-    if (!DataHelper.isEmpty(param) && param) {
-      let queryParam: DeepQueryType<Carriere> | DeepQueryType<Carriere>[] = {};
-      const { ids } = param!;
-      if (DataHelper.isNotEmptyArray(ids!)) {
-        if (typeof ids === 'string') {
-          param!.ids = [ids];
+    try {
+      let carrieres: Carriere[] = [];
+      if (!DataHelper.isEmpty(param) && param) {
+        let queryParam: DeepQueryType<Carriere> | DeepQueryType<Carriere>[] = {};
+        const { ids } = param!;
+        if (DataHelper.isNotEmptyArray(ids!)) {
+          if (typeof ids === 'string') {
+            param!.ids = [ids];
+          }
+          queryParam = { ...queryParam, id: VIn(param!.ids!) };
         }
-        queryParam = { ...queryParam, id: VIn(param!.ids!) };
-      }
-      if (!DataHelper.isEmpty(queryParam)) {
-        return await this.dashboardRepository.carrieres.find({
+        if (!DataHelper.isEmpty(queryParam)) {
+          carrieres = await this.dashboardRepository.carrieres.find({
+            // relations: { carrieres: true, carrieres: true, },
+            where: { ...queryParam },
+            order: { createdAt: 'DESC' },
+          });
+        }
+      } else {
+        carrieres = await this.dashboardRepository.carrieres.find({
           // relations: { carrieres: true, carrieres: true, },
-          where: { ...queryParam },
           order: { createdAt: 'DESC' },
         });
       }
-
+      if (carrieres) {
+        return Promise.all(carrieres.map(async (carriere) => {
+          carriere.entraineur = await this.dashboardRepository.coachs.findOneBy({ id: carriere.entraineur });
+          carriere.salle = await this.dashboardRepository.salles.findOneBy({ id: carriere.salle });
+          return carriere;
+        }));
+      }
+      return carrieres;
+    } catch (error) {
+      this.logger.error(error.message, 'ERROR::CarriereService.fetchAll');
       return [];
     }
-    return await this.dashboardRepository.carrieres.find({
-      // relations: { carrieres: true, carrieres: true, },
-      order: { createdAt: 'DESC' },
-    });
   }
 
   async search(data: ICarriereQuery): Promise<Carriere> {
@@ -55,10 +68,15 @@ export class CarriereService implements ICarriereService {
 
   async fetchOne(id: string): Promise<Carriere> {
     try {
-      return await this.dashboardRepository.carrieres.findOne({
-        relations: { entraineur: true, salle: true, },
+      const carriere = await this.dashboardRepository.carrieres.findOne({
+        // relations: { entraineur: true, salle: true, },
         where: { id },
       });
+      if (carriere) {
+        carriere.entraineur = await this.dashboardRepository.coachs.findOneBy({id: carriere.entraineur});
+        carriere.salle = await this.dashboardRepository.salles.findOneBy({id: carriere.salle});
+      }
+      return carriere
     } catch (error) {
       this.logger.error(error, 'ERROR::CarriereService.fetchOne');
       return null as any;
@@ -67,17 +85,25 @@ export class CarriereService implements ICarriereService {
 
   async add(data: ICreateCarriereDTO): Promise<Carriere> {
     try {
-      const { salleID, entraineurID } = data;
-      let existed: Carriere;
-      existed = await this.search({ salleID, entraineurID });
-      if (existed!) {
-        throw new ConflictException(
-          "Cette carriere existe déjà pour l'entraineur",
-        );
-      }
+      const { salleID, entraineurID, } = data;
+      // const existed = await this.search({ salleID, entraineurID });
+      // if (existed!) {
+      //   throw new ConflictException(
+      //     "Cette carriere existe déjà pour l'entraineur",
+      //   );
+      // }
+      const entraineur = await this.dashboardRepository.coachs.findOneByID(entraineurID);
+      if (!entraineur) throw new NotFoundException('Entraineur not found');
+      const salle = await this.dashboardRepository.salles.findOneByID(salleID);
+      if (!salle) throw new NotFoundException('Salle not found');
+
       const carriere = await this.dashboardRepository.carrieres.create(
         CarriereFactory.create(data),
       );
+      if (carriere) {
+        carriere.entraineur = entraineur;
+        carriere.salle = salle;
+      }
       return carriere;
     } catch (error) {
       this.logger.error(error, 'ERROR::CarriereService.add');

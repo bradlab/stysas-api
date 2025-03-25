@@ -11,5 +11,5 @@ export class Equipement extends ITimestamp {
 }
 
 export interface OEquipement extends Partial<Omit<Equipement, 'salle'>> {
-  salle?: OSalle[];
+  salle?: OSalle;
 }

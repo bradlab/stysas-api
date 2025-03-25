@@ -10,6 +10,8 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+### Modifiez le fichier .example.env en .dev.env
+
 ## Project setup
 ### YARN
 ```bash
@@ -32,9 +34,17 @@ $ yarn run start:dev
 # production mode
 $ yarn run start:prod
 ```
-This will create the following user and team:
-- User: `admin.nosql@esgis.org`
-- Password: `Azerty_10@8`
+## Le démarrage du projet créera :
+- Un utilisateur admin avec les credentials suivant
+  - User: `admin.nosql@esgis.org`
+  - Password: `Azerty_10@8`
+
+- Une liste de :
+  - Adhérents
+  - Salle de sport
+  - Equipements
+  - Horaires
+  - Entraineurs
 
 ## Accéder à la documentation
 

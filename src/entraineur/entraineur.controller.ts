@@ -32,7 +32,7 @@ export class EntraineurController {
   
     @Get(':id')
     @ApiOperation({
-      summary: 'One Subscription',
+      summary: 'One Entraineur',
       description: 'Fetch entraineur by ID',
     })
     @ApiParam({
@@ -42,7 +42,7 @@ export class EntraineurController {
     })
     @ApiResponse({ type: DocEntraineurDTO })
     async show(@Param() { id }: IDParamDTO): Promise<OEntraineur> {
-      return EntraineurFactory.getEntraineur(await this.entraineurService.fetchOne(id));
+      return EntraineurFactory.getEntraineur(await this.entraineurService.fetchOne(id), true);
     }
   
     /**
@@ -77,7 +77,7 @@ export class EntraineurController {
      */
   
     @Delete(':id')
-    @ApiOperation({ summary: 'Remove Subscription' })
+    @ApiOperation({ summary: 'Remove Entraineur' })
     @ApiParam({
       type: String,
       name: 'id',

@@ -1,5 +1,6 @@
 import { SalleSport as Salle, OSalle } from 'domain/model/salle.model';
 import { ICreateSalleDTO, IUpdateSalleDTO } from 'salle/salle.service.interface';
+import { EquipmentFactory } from './equipment.factory';
 
 export abstract class SalleFactory {
   static create(data: ICreateSalleDTO): Salle {
@@ -18,13 +19,14 @@ export abstract class SalleFactory {
     return salle;
   }
 
-  static getSalle(salle: Salle): OSalle {
+  static getSalle(salle: Salle, deep?: boolean): OSalle {
     if (salle) {
       return {
         id: salle.id,
         numero_salle: salle.numero_salle,
         capacite: salle.capacite,
         adresse_salle: salle.adresse_salle,
+        equipments: salle.equipments && deep ? EquipmentFactory.getEquipments(salle.equipments) : undefined,
         createdAt: salle.createdAt,
         updatedAt: salle.updatedAt,
       };

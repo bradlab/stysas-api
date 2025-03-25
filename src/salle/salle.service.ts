@@ -48,6 +48,7 @@ export class SalleService implements ISalleService {
     try {
       let options = {};
       if (data.ids) options = { id: VIn(data.ids) }
+      if (data.numero_salle) options = { numero_salle: data.numero_salle }
       return this.dashboardRepository.salles.findOneBy(options);
     } catch (error) {
       this.logger.error(error, 'ERROR::SalleService.search');
@@ -57,10 +58,19 @@ export class SalleService implements ISalleService {
 
   async fetchOne(id: string): Promise<Salle> {
     try {
-      return await this.dashboardRepository.salles.findOne({
-        relations: { equipments: true, subscriptions: { adherent: true }, },
+      const salle = await this.dashboardRepository.salles.findOne({
+        // relations: { equipments: true, subscriptions: { adherent: true }, },
         where: { id },
       });
+      if (salle) {
+        salle.equipments = await this.dashboardRepository.equipments.find({
+          where: { salle: salle.id },
+        });
+        salle.subscriptions = await this.dashboardRepository.subscriptions.find({
+          where: { salle: salle.id },
+        });
+      }
+      return salle;
     } catch (error) {
       this.logger.error(error, 'ERROR::SalleService.fetchOne');
       return null as any;
@@ -70,9 +80,8 @@ export class SalleService implements ISalleService {
   async add(data: ICreateSalleDTO): Promise<Salle> {
     try {
       const { numero_salle } = data;
-      let existed: Salle;
-      existed = await this.search({ numero_salle });
-      if (existed!) {
+      const existed = await this.search({ numero_salle });
+      if (existed) {
         throw new ConflictException(
           'Ce numéro de salle existe déjà',
         );
@@ -104,7 +113,6 @@ export class SalleService implements ISalleService {
 
   async bulk(staff: Staff, datas: ICreateSalleDTO[]): Promise<Salle[]> {
     try {
-      // Vérifier si une annonce avec le même titre existe déjà
       const salles: Salle[] = [];
       if (DataHelper.isNotEmptyArray(datas)) {
         if (!staff) {

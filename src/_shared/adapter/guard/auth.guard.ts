@@ -57,7 +57,6 @@ export class StaffGuard implements CanActivate {
         const payload: IJwtPayload = await this._getPayload(token);
         const client = await this._validate(payload);
         request['user'] = client;
-        // console.log('CLIENT ======== DO ', request.path, client?.id);
         if (!client) {
           throw new UnauthorizedException();
         }

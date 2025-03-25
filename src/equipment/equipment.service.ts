@@ -70,7 +70,7 @@ export class EquipmentService implements IEquipmentService {
   async add(data: ICreateEquipmentDTO): Promise<Equipement> {
     try {
       const { nom_equip, salleID, num_equip } = data;
-      // const existed = await this.search({ nom_equip, num_equip });
+      // const existed = await this.search({ num_equip });
       const existed = await this.dashboardRepository.equipments.findOne({
         where: [
           { nom_equip },
@@ -109,7 +109,6 @@ export class EquipmentService implements IEquipmentService {
 
   async bulk(staff: Staff, datas: ICreateEquipmentDTO[]): Promise<Equipement[]> {
     try {
-      // Vérifier si une annonce avec le même titre existe déjà
       const equipments: Equipement[] = [];
       if (DataHelper.isNotEmptyArray(datas)) {
         if (!staff) {

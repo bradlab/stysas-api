@@ -44,7 +44,9 @@
       "entraineur": ["./src/entraineur"],
       "entraineur/*": ["./src/entraineur/*"],
       "horaire": ["./src/horaire"],
-      "horaire/*": ["./src/horaire/*"]
+      "horaire/*": ["./src/horaire/*"],
+      "statistic": ["./src/statistic"],
+      "statistic/*": ["./src/statistic/*"]
     }
   }
 }

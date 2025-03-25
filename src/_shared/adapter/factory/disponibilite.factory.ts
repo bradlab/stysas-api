@@ -7,8 +7,8 @@ export abstract class DisponibiliteFactory {
   static create(data: ICreateDisponibiliteDTO): Disponibilite {
     const disponibilite = new Disponibilite();
     disponibilite.date_dispo = data.date_dispo;
-    disponibilite.entraineur = data.entraineur;
-    disponibilite.horaire = data.horaire;
+    disponibilite.entraineur = data.entraineurID as any;
+    disponibilite.horaire = data.horaireID as any;
     return disponibilite;
   }
 
@@ -18,17 +18,22 @@ export abstract class DisponibiliteFactory {
     return disponibilite;
   }
 
-  static getDisponibilite(disponibilite: Disponibilite): ODisponibilite {
-    if (disponibilite) {
+  static getDisponibilite(disponibilite: Disponibilite, deep?: boolean): ODisponibilite {
+    if (disponibilite && typeof disponibilite != 'string') {
       return {
         id: disponibilite.id,
         date_dispo: disponibilite.date_dispo,
-        entraineur: EntraineurFactory.getEntraineur(disponibilite.entraineur!),
-        horaire: HoraireFactory.getHoraire(disponibilite.horaire!),
+        entraineur: deep ? EntraineurFactory.getEntraineur(disponibilite.entraineur!) : undefined,
+        horaire: deep ? HoraireFactory.getHoraire(disponibilite.horaire!) : undefined,
         createdAt: disponibilite.createdAt,
         updatedAt: disponibilite.updatedAt,
       };
     }
     return null as any;
+  }
+
+  static getDisponibilites(disponibilites: Disponibilite[], deep?: boolean): ODisponibilite[] {
+    if (!disponibilites) return [];
+    return disponibilites.map((disponibilite) => DisponibiliteFactory.getDisponibilite(disponibilite, deep));
   }
 }

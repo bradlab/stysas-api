@@ -114,8 +114,8 @@ export class AdherentController {
       @GetUser() user: Staff,
       @Body() datas: CreateAdherentDTO[],
     ) {
-      const prestations = await this.adherentService.bulk(user, datas);
-      return prestations?.map((prestation) => AdherentFactory.getAdherent(prestation));
+      const adherents = await this.adherentService.bulk(user, datas);
+      return adherents?.map((adherent) => AdherentFactory.getAdherent(adherent));
     }
 
   /**

@@ -11,11 +11,17 @@ export class DBGenericRepository<T> implements IGenericRepository<T> {
   }
 
   find(options?: any): Promise<T[]> {
-    if (options?.where) {
-      options = {...options.where, ...options, where: undefined};
+    // if (this._repository.modelName === 'EquipementEntity') {
+    //   return this._repository.find(this.convertWhere(options)).populate('salle').exec();
+    // }
+    // if (this._repository.modelName === 'SalleSportEntity') {
+    //   return this._repository.find(this.convertWhere(options)).populate('equipments').exec();
+    // }
+    if (options) {
+      const query = this._repository.find(this.convertWhere(options));
+      return this.transformQueryToMongoose(query, options)
     }
-    const query = this._repository.find(this.convertWhere(options));
-    return this.transformQueryToMongoose(query, options)
+    return this._repository.find().exec();
   }
 
   findBy(options: any): Promise<T[]> {
@@ -23,7 +29,7 @@ export class DBGenericRepository<T> implements IGenericRepository<T> {
   }
 
   async findOneByID(id: string, options?: any): Promise<T> {
-    return await this._repository.findById(id).exec() ?? null as any;
+    return await this._repository.findOne({id}).exec() ?? null as any;
   }
 
   async findByIds(ids: string[], options?: any): Promise<T[]> {
@@ -36,7 +42,13 @@ export class DBGenericRepository<T> implements IGenericRepository<T> {
 
   async findOne(options: any): Promise<T> {
     const optionQuery = this.convertWhere(options);
-    return await this._repository.findOne(optionQuery).exec() ?? null as any;
+    // return await this._repository.findOne(optionQuery).exec() ?? null as any;
+    const query = this._repository.find(optionQuery);
+    const rep = await this.transformQueryToMongoose(query, options) as any;
+    if (rep?.length > 0) {
+      return rep[0];
+    }
+    return null as any;
   }
 
   async findForLogin(options: any): Promise<T> {
@@ -64,7 +76,9 @@ export class DBGenericRepository<T> implements IGenericRepository<T> {
   }
 
   async update(item: T) : Promise<any> {
-    return await this._repository.updateOne({id: item['id']}, item as any);
+    const rep = await this._repository.updateOne({id: item['id']}, item as any);
+    if (rep) return item;
+    return null as any;
   }
 
   async clean(items: any): Promise<any> {
@@ -120,39 +134,41 @@ export class DBGenericRepository<T> implements IGenericRepository<T> {
     options: RepoParam<T>
   ): Promise<T[]> {
     try {
-      // let query = this._repository.find(this.convertWhere(options.where) || {});
-  
-      // Gestion des relations (populate)
-      if (options.relations) {
-        query = await this.populateRecursive(query, options.relations as any);
-        // for (const relation in options.relations as any) {
-        //   if (options.relations[relation] === true) {
-        //     query = query.populate(relation);
-        //   } else {
-        //     query = query.populate({
-        //       path: relation,
-        //       populate: options.relations[relation],
-        //     });
-        //   }
-        // }
-      }
-  
-      // Gestion de l'ordre de tri
-      if (options.order) {
-        query = query.sort(this.convertirOrderEnSort(options.order));
-      }
-  
-      // Gestion des champs à sélectionner
-      if (options.select) {
-        query = query.select(options.select as any);
-      }
-  
-      // Gestion de la pagination
-      if (options.skip) {
-        query = query.skip(options.skip);
-      }
-      if (options.take) {
-        query = query.limit(options.take);
+      if (options) {
+        // let query = this._repository.find(this.convertWhere(options.where) || {});
+    
+        // Gestion des relations (populate)
+        if (options?.relations) {
+          // query = await this.populateRecursive(query, options.relations as any);
+          for (const relation in options.relations as any) {
+            if (options.relations[relation] === true) {
+              query = query.populate(relation);
+            } else {
+              query = query.populate({
+                path: relation,
+                populate: options.relations[relation],
+              });
+            }
+          }
+        }
+    
+        // Gestion de l'ordre de tri
+        if (options.order) {
+          query = query.sort(this.convertirOrderEnSort(options.order));
+        }
+    
+        // Gestion des champs à sélectionner
+        if (options.select) {
+          query = query.select(options.select as any);
+        }
+    
+        // Gestion de la pagination
+        if (options.skip) {
+          query = query.skip(options.skip);
+        }
+        if (options.take) {
+          query = query.limit(options.take);
+        }
       }
   
       return await query.exec();

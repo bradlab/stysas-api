@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Pa
 import { IEquipmentService } from './equipment.service.interface';
 import { EquipmentFactory } from 'adapter/factory/equipment.factory';
 import { OEquipement } from 'domain/model/equipment.model';
-import { ApiOperation, ApiResponse, ApiQuery, ApiParam, ApiBody, ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiQuery, ApiParam, ApiBody, ApiBearerAuth, ApiTags, ApiExcludeEndpoint } from '@nestjs/swagger';
 import { GetUser } from 'adapter/decorator';
 import { IDParamDTO } from 'adapter/param.dto';
 import { Staff } from 'domain/model/staff.model';
@@ -44,7 +44,7 @@ export class EquipmentController {
     })
     @ApiResponse({ type: DocEquipmentDTO })
     async show(@Param() { id }: IDParamDTO): Promise<OEquipement> {
-      return EquipmentFactory.getEquipement(await this.equipmentService.fetchOne(id));
+      return EquipmentFactory.getEquipement(await this.equipmentService.fetchOne(id), true);
     }
   
     /**
@@ -62,7 +62,8 @@ export class EquipmentController {
       const equipment = await this.equipmentService.add(data);
       return EquipmentFactory.getEquipement(equipment);
     }
-  
+
+    @ApiExcludeEndpoint()
     @Post('bulk')
     @ApiOperation({ summary: "Créer une liste d'equipements" })
     @ApiResponse({
@@ -75,7 +76,7 @@ export class EquipmentController {
       @Body(new ParseArrayPipe({items: CreateEquipmentDTO})) datas: CreateEquipmentDTO[],
     ) {
       const equipments = await this.equipmentService.bulk(user, datas);
-      return equipments?.map((prestation) => EquipmentFactory.getEquipement(prestation));
+      return equipments?.map((equipment) => EquipmentFactory.getEquipement(equipment));
     }
   
     /**

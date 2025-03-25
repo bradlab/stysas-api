@@ -29,9 +29,9 @@ export class SalleController {
         param.ids = ids?.split(',');
       }
       const salles = await this.salleService.fetchAll(param);
-      return salles.map((salle) => SalleFactory.getSalle(salle));
+      return salles.map((salle) => SalleFactory.getSalle(salle, true));
     }
-  
+
     @Get(':id')
     @ApiOperation({
       summary: 'One Salle',
@@ -44,7 +44,7 @@ export class SalleController {
     })
     @ApiResponse({ type: DocSalleDTO })
     async show(@Param() { id }: IDParamDTO): Promise<OSalle> {
-      return SalleFactory.getSalle(await this.salleService.fetchOne(id));
+      return SalleFactory.getSalle(await this.salleService.fetchOne(id), true);
     }
   
     /**
@@ -75,7 +75,7 @@ export class SalleController {
         @Body(new ParseArrayPipe({items: CreateSalleDTO})) datas: CreateSalleDTO[],
       ) {
         const salles = await this.salleService.bulk(user, datas);
-        return salles?.map((prestation) => SalleFactory.getSalle(prestation));
+        return salles?.map((salle) => SalleFactory.getSalle(salle));
       }
   
     /**

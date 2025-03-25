@@ -1,6 +1,7 @@
 import { Equipement, OEquipement } from 'domain/model/equipment.model';
 import { SalleSport } from 'domain/model/salle.model';
 import { ICreateEquipmentDTO, IUpdateEquipmentDTO } from 'equipment/equipment.service.interface';
+import { SalleFactory } from './salle.factory';
 
 export abstract class EquipmentFactory {
   static create(data: ICreateEquipmentDTO): Equipement {
@@ -23,7 +24,7 @@ export abstract class EquipmentFactory {
     return equipment;
   }
 
-  static getEquipement(equipment: Equipement): OEquipement {
+  static getEquipement(equipment: Equipement, deep?: boolean): OEquipement {
     if (equipment) {
       return {
         id: equipment.id,
@@ -31,11 +32,15 @@ export abstract class EquipmentFactory {
         nom_equip: equipment.nom_equip,
         num_equip: equipment.num_equip,
         quantite: equipment.quantite,
-        // salle: equipment.salle,
+        salle: deep ? SalleFactory.getSalle(equipment.salle!) : undefined,
         createdAt: equipment.createdAt,
         updatedAt: equipment.updatedAt,
       };
     }
     return null as any;
+  }
+
+  static getEquipments(equipments: Equipement[], deep?: boolean): OEquipement[] {
+    return equipments.map((equipment) => this.getEquipement(equipment, deep));
   }
 }

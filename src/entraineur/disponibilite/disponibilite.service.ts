@@ -15,29 +15,46 @@ export class DisponibiliteService implements IDisponibiliteService {
   ) {}
   
   async fetchAll(param?: IDisponibiliteQuery): Promise<Disponibilite[]> {
-    if (!DataHelper.isEmpty(param) && param) {
-      let queryParam: DeepQueryType<Disponibilite> | DeepQueryType<Disponibilite>[] = {};
-      const { ids } = param!;
-      if (DataHelper.isNotEmptyArray(ids!)) {
-        if (typeof ids === 'string') {
-          param!.ids = [ids];
+    try {
+      let disponibilites: Disponibilite[] = [];
+      if (!DataHelper.isEmpty(param) && param) {
+        let queryParam: DeepQueryType<Disponibilite> | DeepQueryType<Disponibilite>[] = {};
+        const { ids } = param!;
+        if (DataHelper.isNotEmptyArray(ids!)) {
+          if (typeof ids === 'string') {
+            param!.ids = [ids];
+          }
+          queryParam = { ...queryParam, id: VIn(param!.ids!) };
         }
-        queryParam = { ...queryParam, id: VIn(param!.ids!) };
-      }
-      if (!DataHelper.isEmpty(queryParam)) {
-        return await this.dashboardRepository.disponibilites.find({
+        if (!DataHelper.isEmpty(queryParam)) {
+          disponibilites = await this.dashboardRepository.disponibilites.find({
+            // relations: { disponibilites: true, carrieres: true, },
+            where: { ...queryParam },
+            order: { createdAt: 'DESC' },
+          });
+          
+        }
+  
+        return [];
+      } else {
+        disponibilites = await this.dashboardRepository.disponibilites.find({
           // relations: { disponibilites: true, carrieres: true, },
-          where: { ...queryParam },
           order: { createdAt: 'DESC' },
         });
       }
-
+  
+      if (disponibilites) {
+        return Promise.all(disponibilites.map(async (disponibilite) => {
+          disponibilite.entraineur = await this.dashboardRepository.coachs.findOneBy({ id: disponibilite.entraineur });
+          disponibilite.horaire = await this.dashboardRepository.horaires.findOneBy({ id: disponibilite.horaire });
+          return disponibilite;
+        }));
+      }
+      return disponibilites;
+    } catch (error) {
+      this.logger.error(error, 'ERROR::DisponibiliteService.fetchAll');
       return [];
     }
-    return await this.dashboardRepository.disponibilites.find({
-      // relations: { disponibilites: true, carrieres: true, },
-      order: { createdAt: 'DESC' },
-    });
   }
 
   async search(data: IDisponibiliteQuery): Promise<Disponibilite> {
@@ -56,10 +73,15 @@ export class DisponibiliteService implements IDisponibiliteService {
 
   async fetchOne(id: string): Promise<Disponibilite> {
     try {
-      return await this.dashboardRepository.disponibilites.findOne({
-        relations: { entraineur: true, horaire: true, },
+      const disponibilite = await this.dashboardRepository.disponibilites.findOne({
+        // relations: { entraineur: true, horaire: true, },
         where: { id },
       });
+      if (disponibilite) {
+        disponibilite.entraineur = await this.dashboardRepository.coachs.findOneBy({ id: disponibilite.entraineur });
+        disponibilite.horaire = await this.dashboardRepository.horaires.findOneBy({ id: disponibilite.horaire });
+      }
+      return disponibilite;
     } catch (error) {
       this.logger.error(error, 'ERROR::DisponibiliteService.fetchOne');
       return null as any;
@@ -68,17 +90,20 @@ export class DisponibiliteService implements IDisponibiliteService {
 
   async add(data: ICreateDisponibiliteDTO): Promise<Disponibilite> {
     try {
-      const { horaireID, entraineurID, date_dispo } = data;
-      let existed: Disponibilite;
-      existed = await this.search({ horaireID, entraineurID });
-      if (existed!) {
-        throw new ConflictException(
-          "Cette disponibilite existe déjà pour l'entraineur",
-        );
+      const { horaireID, entraineurID } = data;
+      const horaire = await this.dashboardRepository.horaires.findOneBy({ id: horaireID });
+      if (!horaire) {
+        throw new NotFoundException('Horaire not found');
+      }
+      const entraineur = await this.dashboardRepository.coachs.findOneBy({ id: entraineurID });
+      if (!entraineur) {
+        throw new NotFoundException('Entraineur not found');
       }
       const disponibilite = await this.dashboardRepository.disponibilites.create(
         DisponibiliteFactory.create(data),
       );
+      disponibilite.entraineur = entraineur;
+      disponibilite.horaire = horaire;
       return disponibilite;
     } catch (error) {
       this.logger.error(error, 'ERROR::DisponibiliteService.add');

@@ -27,7 +27,7 @@ export class CarriereController {
         param.ids = ids?.split(',');
       }
       const carrieres = await this.carriereService.fetchAll(param);
-      return carrieres.map((carriere) => CarriereFactory.getCarriere(carriere));
+      return carrieres.map((carriere) => CarriereFactory.getCarriere(carriere, true));
     }
   
     @Get(':id')
@@ -41,7 +41,7 @@ export class CarriereController {
     })
     @ApiResponse({ type: DocCarriereDTO })
     async show(@Param() { id }: IDParamDTO): Promise<OCarriere> {
-      return CarriereFactory.getCarriere(await this.carriereService.fetchOne(id));
+      return CarriereFactory.getCarriere(await this.carriereService.fetchOne(id), true);
     }
   
     /**

@@ -58,11 +58,9 @@ export class DashboardRepository
     @InjectModel(EntraineurEntity.name)
     private coachRepository: Model<EntraineurEntity>,
 
-    @InjectModel(SalleSportEntity.name)
-    private prestationRepository: Model<SalleSportEntity>,
-
+    
     @InjectModel(SubscriptionEntity.name)
-    private storeRepository: Model<SubscriptionEntity>,
+    private subscriptionRepository: Model<SubscriptionEntity>,
 
     @InjectModel(HoraireEntity.name)
     private horaireRepository: Model<HoraireEntity>,
@@ -73,6 +71,9 @@ export class DashboardRepository
     @InjectModel(CarriereEntity.name)
     private carriereRepository: Model<CarriereEntity>,
 
+    @InjectModel(SalleSportEntity.name)
+    private salleRepository: Model<SalleSportEntity>,
+
     @InjectModel(EquipementEntity.name)
     private equipementRepository: Model<EquipementEntity>,
   ) {}
@@ -80,11 +81,11 @@ export class DashboardRepository
   onApplicationBootstrap(): void {
     this.users = new DBGenericRepository<StaffEntity>(this.staffRepository);
     this.adherents = new DBGenericRepository<AdherentEntity>(this.clientRepository);
-    this.salles = new DBGenericRepository<SalleSportEntity>(this.prestationRepository);
+    this.salles = new DBGenericRepository<SalleSportEntity>(this.salleRepository);
     this.coachs = new DBGenericRepository<EntraineurEntity>(
       this.coachRepository,
     );
-    this.subscriptions = new DBGenericRepository<SubscriptionEntity>(this.storeRepository);
+    this.subscriptions = new DBGenericRepository<SubscriptionEntity>(this.subscriptionRepository);
     this.horaires = new DBGenericRepository<HoraireEntity>(this.horaireRepository);
     this.disponibilites = new DBGenericRepository<DisponibiliteEntity>(this.disponibiliteRepository);
     this.carrieres = new DBGenericRepository<CarriereEntity>(this.carriereRepository);
